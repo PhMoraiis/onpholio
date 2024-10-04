@@ -1,5 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { deleteAllProjects, deleteProjectById } from '../../services/Projects/delete-project'
+import { deleteAllProjects, deleteProjectById } from '@/services/Projects/delete-project'
 
 export const deleteAllProjectsRoute: FastifyPluginAsyncZod = async app => {
   app.delete('/projects', { preHandler: [app.authenticate] }, async () => {

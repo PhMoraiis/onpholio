@@ -1,6 +1,6 @@
 import z from 'zod'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { createProject } from '../../services/Projects/create-project'
+import { createProject } from '@/services/Projects/create-project'
 import { Stats } from '@prisma/client'
 
 export const createProjectRoute: FastifyPluginAsyncZod = async app => {

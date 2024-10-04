@@ -1,5 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { getAllProjects, getProjectByID } from '../../services/Projects/get-project'
+import { getAllProjects, getProjectByID } from '@/services/Projects/get-project'
 
 export const getAllProjectsRoute: FastifyPluginAsyncZod = async app => {
   app.get(

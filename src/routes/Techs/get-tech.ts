@@ -1,5 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { getAllTechs, getTechByID } from '../../services/Techs/get-tech'
+import { getAllTechs, getTechByID } from '@/services/Techs/get-tech'
 
 export const getAllTechsRoute: FastifyPluginAsyncZod = async app => {
   app.get(

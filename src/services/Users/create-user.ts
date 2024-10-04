@@ -1,6 +1,6 @@
 import type { FastifyReply } from 'fastify'
-import { Prisma } from '../../database'
-import bcrypt from 'bcrypt'
+import bcryptjs from 'bcryptjs'
+import { Prisma } from '@/database/index'
 
 interface CreateUserRequest {
   name?: string
@@ -25,7 +25,7 @@ export async function createUser(
   }
 
   try {
-    const hash = await bcrypt.hash(password, 10)
+    const hash = await bcryptjs.hash(password, 10)
     const result = await Prisma.user.create({
       data: {
         name,

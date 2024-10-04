@@ -1,14 +1,16 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { Prisma } from '../../database'
-import bcrypt from 'bcrypt'
+import bcryptjs from 'bcryptjs'
+import { Prisma } from '@/database/index'
 
 interface LoginUserRequest {
   email: string
   password: string
 }
 
-export async function loginUser({ email, password }: LoginUserRequest,
-  reply: FastifyReply, req: FastifyRequest
+export async function loginUser(
+  { email, password }: LoginUserRequest,
+  reply: FastifyReply,
+  req: FastifyRequest
 ) {
   const user = await Prisma.user.findUnique({
     where: {
@@ -16,7 +18,7 @@ export async function loginUser({ email, password }: LoginUserRequest,
     },
   })
 
-  const isMatch = user && (await bcrypt.compare(password, user.password))
+  const isMatch = user && (await bcryptjs.compare(password, user.password))
   if (!user || !isMatch) {
     return {
       success: false,

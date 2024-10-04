@@ -1,5 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { logout } from '../../services/Users/logout-user'
+import { logout } from '@/services/Users/logout-user'
 
 export const userLogoutRoute: FastifyPluginAsyncZod = async app => {
   app.delete(

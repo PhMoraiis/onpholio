@@ -1,4 +1,4 @@
-import { Prisma } from '../../database'
+import { Prisma } from '@/database/index'
 
 interface GetTechRequest {
   id: string

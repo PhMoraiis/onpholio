@@ -1,6 +1,6 @@
 import z from 'zod'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { updateMultipleTechOrders } from '../../services/Techs/order-tech'
+import { updateMultipleTechOrders } from '@/services/ProjectTech/order'
 
 export const updateTechOrderRoute: FastifyPluginAsyncZod = async app => {
   app.patch(

@@ -1,6 +1,6 @@
 import z from 'zod'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { loginUser } from '../../services/Users/login-user'
+import { loginUser } from '@/services/Users/login-user'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
 export const userLoginRoute: FastifyPluginAsyncZod = async app => {
