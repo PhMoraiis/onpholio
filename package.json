@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun --env-file=.env --watch run src/http/index.ts",
     "start": "bun run src/http/index.ts",
-    "build": "bun src/http/index.ts",
+    "build": "bun prisma generate && bun http/index.ts",
     "prepare": "husky",
     "commit": "git-cz"
   },
