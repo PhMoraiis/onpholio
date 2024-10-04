@@ -5,31 +5,31 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
 import fastifyCors from '@fastify/cors'
-import { env } from '../env'
 import fjwt, { type FastifyJWT } from '@fastify/jwt'
 import fCookie from '@fastify/cookie'
-import { getUsersRoute } from '../routes/Users/get-users'
-import { registerUserRoute } from '../routes/Users/user-register'
-import { userLoginRoute } from '../routes/Users/user-login'
-import { userLogoutRoute } from '../routes/Users/user-logout'
+import { env } from './src/env'
+import { getUsersRoute } from './src/routes/Users/get-users'
+import { registerUserRoute } from './src/routes/Users/user-register'
+import { userLoginRoute } from './src/routes/Users/user-login'
+import { userLogoutRoute } from './src/routes/Users/user-logout'
 import {
   getAllProjectsRoute,
   getProjectByIDRoute,
-} from '../routes/Projects/get-project'
-import { getAllTechsRoute, getTechByIDRoute } from '../routes/Techs/get-tech'
+} from './src/routes/Projects/get-project'
+import { getAllTechsRoute, getTechByIDRoute } from './src/routes/Techs/get-tech'
 import {
   deleteAllProjectsRoute,
   deleteProjectByIdRoute,
-} from '../routes/Projects/delete-project'
+} from './src/routes/Projects/delete-project'
 import {
   deleteAllTechsRoute,
   deleteTechByIdRoute,
-} from '../routes/Techs/delete-tech'
-import { createTechRoute } from '../routes/Techs/create-tech'
-import { updateTechRoute } from '../routes/Techs/update-tech'
-import { createProjectRoute } from '../routes/Projects/create-project'
-import { updateProjectRoute } from '../routes/Projects/update-project'
-import { updateTechOrderRoute } from '../routes/ProjectTech/order'
+} from './src/routes/Techs/delete-tech'
+import { createTechRoute } from './src/routes/Techs/create-tech'
+import { updateTechRoute } from './src/routes/Techs/update-tech'
+import { createProjectRoute } from './src/routes/Projects/create-project'
+import { updateProjectRoute } from './src/routes/Projects/update-project'
+import { updateTechOrderRoute } from './src/routes/ProjectTech/order'
 
 const listeners = ['SIGINT', 'SIGTERM']
 // biome-ignore lint/complexity/noForEach: <explanation>
