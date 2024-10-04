@@ -5,8 +5,8 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "bun --env-file=.env --watch run src/http/index.ts",
-    "start": "bun --env-file=.env run src/http/index.ts",
-    "build": "bun build src/http/index.ts",
+    "start": "bun run src/http/",
+    "build": "bun prisma generate && bun build src/http/index.ts",
     "prepare": "husky",
     "commit": "git-cz"
   },
