@@ -44,7 +44,13 @@ const app = fastify().withTypeProvider<ZodTypeProvider>()
 
 // Cors
 app.register(fastifyCors, {
-  origin: '*',
+  origin:
+    env.NODE_ENV === 'production'
+      ? 'https://philipemorais.com'
+      : 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 })
 
 // JWT
@@ -111,7 +117,11 @@ app.register(updateTechOrderRoute)
 app
   .listen({
     port: env.PORT || 3333,
+    host: '0.0.0.0',
   })
   .then(() => {
     console.log(`HTTP Server running on http://localhost:${env.PORT}`)
+  })
+  .catch(err => {
+    console.error('Error starting server:', err)
   })
