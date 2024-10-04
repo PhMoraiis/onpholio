@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file .env src/http/index.ts",
     "build": "prisma generate && tsup src",
-    "start": "tsx --env-file .env src/http/index.ts"
+    "start": "tsx src/http/index.ts"
   },
   "prisma": {
     "seed": "bun run src/database/seed.ts"
