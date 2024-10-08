@@ -7,7 +7,7 @@ interface UpdateTechRequest {
 }
 
 export async function updateTech({ id, name, image }: UpdateTechRequest) {
-  const result = await Prisma.tech.update({
+  const updateTech = await Prisma.tech.update({
     where: {
       id: id,
     },
@@ -16,8 +16,6 @@ export async function updateTech({ id, name, image }: UpdateTechRequest) {
       ...(image && { image }),
     },
   })
-
-  const updateTech = result
 
   return {
     updateTech,
