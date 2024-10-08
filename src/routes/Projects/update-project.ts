@@ -9,19 +9,21 @@ export const updateProjectRoute: FastifyPluginAsyncZod = async app => {
     {
       schema: {
         body: z.object({
-          title: z.string(),
-          description: z.string(),
-          imagesDesktop: z.array(z.string()),
-          imagesMobile: z.array(z.string()),
-          href: z.string().url(),
-          order: z.number(),
-          status: z.nativeEnum(Stats),
-          techs: z.array(
-            z.object({
-              techId: z.string(),
-              order: z.number(),
-            })
-          ),
+          title: z.string().optional(),
+          description: z.string().optional(),
+          lightImageDesktop: z.string().optional(),
+          darkImageDesktop: z.string().optional(),
+          lightImageMobile: z.string().optional(),
+          darkImageMobile: z.string().optional(),
+          href: z.string().url().optional(),
+          status: z.nativeEnum(Stats).optional(),
+          techs: z
+            .array(
+              z.object({
+                id: z.string(),
+              })
+            )
+            .optional(),
         }),
       },
       preHandler: [app.authenticate],
@@ -30,10 +32,11 @@ export const updateProjectRoute: FastifyPluginAsyncZod = async app => {
       const {
         title,
         description,
-        imagesDesktop,
-        imagesMobile,
+        lightImageDesktop,
+        darkImageDesktop,
+        lightImageMobile,
+        darkImageMobile,
         href,
-        order,
         status,
         techs,
       } = request.body
@@ -43,10 +46,11 @@ export const updateProjectRoute: FastifyPluginAsyncZod = async app => {
         id: id,
         title,
         description,
-        imagesDesktop,
-        imagesMobile,
+        lightImageDesktop,
+        darkImageDesktop,
+        lightImageMobile,
+        darkImageMobile,
         href,
-        order,
         status,
         techs,
       })

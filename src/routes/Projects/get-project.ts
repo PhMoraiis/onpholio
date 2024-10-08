@@ -4,15 +4,11 @@ import { getAllProjects, getProjectByID } from '@/services/Projects/get-project'
 export const getAllProjectsRoute: FastifyPluginAsyncZod = async app => {
   app.get(
     '/projects',
-    { preHandler: [app.authenticate] },
+    {
+      preHandler: [app.authenticate],
+    },
     async (request, reply) => {
-      const { sortBy, sortOrder, filterBy } = request.query as {
-        sortBy?: string
-        sortOrder?: 'asc' | 'desc'
-        filterBy?: string
-      }
-
-      const projects = await getAllProjects({ sortBy, sortOrder, filterBy })
+      const projects = await getAllProjects()
       reply.send(projects)
     }
   )

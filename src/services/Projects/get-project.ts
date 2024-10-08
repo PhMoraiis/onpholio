@@ -4,31 +4,15 @@ interface GetProjectRequest {
   id: string
 }
 
-export async function getAllProjects({
-  sortBy = 'title',
-  sortOrder = 'asc',
-  filterBy,
-}: {
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-  filterBy?: string
-}) {
-  let query = /*sql*/ `
-    SELECT * FROM projects
-  `
-
-  if (filterBy) {
-    query += /*sql*/ `
-      WHERE LOWER(title) LIKE LOWER(%${filterBy}%)
-    `
-  }
-
-  const orderClause = sortOrder === 'asc' ? 'ASC' : 'DESC'
-  query += /*sql*/ `
-    ORDER BY LOWER(${sortBy}) ${orderClause}
-  `
-
-  const projects = await Prisma.$queryRaw`${query}`
+export async function getAllProjects() {
+  const projects = await Prisma.project.findMany({
+   include: {
+    techs: true,
+   },
+   orderBy: {
+    createdAt: 'asc',
+   },
+  })
 
   return {
     projects,

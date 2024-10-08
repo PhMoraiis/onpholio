@@ -11,43 +11,49 @@ export const createProjectRoute: FastifyPluginAsyncZod = async app => {
         body: z.object({
           title: z.string(),
           description: z.string(),
-          imagesDesktop: z.array(z.string()),
-          imagesMobile: z.array(z.string()),
+          lightImageDesktop: z.string(),
+          darkImageDesktop: z.string().optional(),
+          lightImageMobile: z.string(),
+          darkImageMobile: z.string().optional(),
           href: z.string().url(),
-          order: z.number(),
           status: z.nativeEnum(Stats),
           techs: z.array(
             z.object({
-              techId: z.string(),
-              order: z.number(),
+              id: z.string(),
             })
-          ),
+          )
         }),
       },
       preHandler: [app.authenticate],
     },
     async request => {
-      const {
-        title,
-        description,
-        imagesDesktop,
-        imagesMobile,
-        href,
-        order,
-        status,
-        techs,
-      } = request.body
+      try {
+        const {
+          title,
+          description,
+          lightImageDesktop,
+          darkImageDesktop,
+          lightImageMobile,
+          darkImageMobile,
+          href,
+          status,
+          techs,
+        } = request.body
 
-      await createProject({
-        title,
-        description,
-        imagesDesktop,
-        imagesMobile,
-        href,
-        order,
-        status,
-        techs,
-      })
+        await createProject({
+          title,
+          description,
+          lightImageDesktop,
+          darkImageDesktop,
+          lightImageMobile,
+          darkImageMobile,
+          href,
+          status,
+          techs,
+        })
+      } catch (error) {
+        console.error('Error creating project:', error) // Adicionando log de erro
+      }
     }
   )
 }

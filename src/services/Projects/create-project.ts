@@ -1,49 +1,53 @@
 import { Prisma } from '@/database/index'
+import type { Stats } from '@prisma/client'
 
 interface CreateProjectRequest {
   title: string
   description: string
-  imagesDesktop: string[]
-  imagesMobile: string[]
+  lightImageDesktop: string
+  darkImageDesktop?: string
+  lightImageMobile: string
+  darkImageMobile?: string
   href: string
-  order: number
-  status: 'ONLINE' | 'DEVELOPMENT' | 'INTERRUPTED'
-  techs: { techId: string; order: number }[] 
+  status: Stats
+  techs: {
+    id: string
+  }[]
 }
 
 export async function createProject({
   title,
   description,
-  imagesDesktop,
-  imagesMobile,
+  lightImageDesktop,
+  darkImageDesktop,
+  lightImageMobile,
+  darkImageMobile,
   href,
-  order,
   status,
   techs,
 }: CreateProjectRequest) {
-  const result = await Prisma.project.create({
-    data: {
-      title,
-      description,
-      imagesDesktop,
-      imagesMobile,
-      href,
-      order,
-      status,
-      techs: {
-        create: techs.map(tech => ({
-          tech: {
-            connect: { id: tech.techId }, // Conecta a tecnologia já existente
-          },
-          order: tech.order,
-        })),
+  try {
+    const project = await Prisma.project.create({
+      data: {
+        title,
+        description,
+        lightImageDesktop,
+        darkImageDesktop,
+        lightImageMobile,
+        darkImageMobile,
+        href,
+        status,
+        techs: {
+          connect: techs
+        }
       },
-    },
-  })
+    })
 
-  const project = result
-
-  return {
-    project,
+    return {
+      project,
+    }
+  } catch (error) {
+    console.error('Erro ao criar o projeto:', error)
+    throw error;
   }
 }
