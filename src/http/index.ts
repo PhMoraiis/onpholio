@@ -29,7 +29,6 @@ import { createTechRoute } from '@/routes/Techs/create-tech'
 import { updateTechRoute } from '@/routes/Techs/update-tech'
 import { createProjectRoute } from '@/routes/Projects/create-project'
 import { updateProjectRoute } from '@/routes/Projects/update-project'
-import { updateTechOrderRoute } from '@/routes/ProjectTech/order'
 
 const listeners = ['SIGINT', 'SIGTERM']
 // biome-ignore lint/complexity/noForEach: <explanation>
@@ -109,9 +108,6 @@ app.register(deleteAllProjectsRoute)
 app.register(deleteProjectByIdRoute)
 app.register(createProjectRoute)
 app.register(updateProjectRoute)
-
-// Route ProjectsTech
-app.register(updateTechOrderRoute)
 
 // Server
 app
