@@ -26,17 +26,18 @@ model User {
 }
 
 model Project {
-  id            String        @id @default(cuid())
-  title         String
-  description   String
-  imagesDesktop String[]
-  imagesMobile  String[]
-  href          String
-  order         Int           @default(autoincrement())
-  status        Stats
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  techs         ProjectTech[]
+  id                String        @id @default(cuid())
+  title             String
+  description       String
+  lightImageDesktop String
+  darkImageDesktop  String?
+  lightImageMobile  String
+  darkImageMobile   String?
+  href              String
+  status            Stats
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  techs            Tech[]
 
   @@map("projects")
 }
@@ -47,27 +48,15 @@ model Tech {
   image     String?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  projects  ProjectTech[]
+  projects  Project[]
 
   @@map("techs")
 }
 
-model ProjectTech {
-  id        String  @id @default(cuid())
-  project   Project @relation(fields: [projectId], references: [id])
-  projectId String
-  tech      Tech    @relation(fields: [techId], references: [id])
-  techId    String
-  order     Int
-
-  @@unique([projectId, techId])
-  @@map("project_techs")
-}
-
 enum Stats {
   ONLINE
-  DEVELOPMENT
-  INTERRUPTED
+  DESENVOLVIMENTO
+  INTERROMPIDO
 
   @@map("stats")
 }
