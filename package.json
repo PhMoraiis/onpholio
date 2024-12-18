@@ -12,8 +12,7 @@
     "seed": "bun run src/database/seed.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.3",
-    "@types/bun": "latest"
+    "@biomejs/biome": "^1.9.3"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
