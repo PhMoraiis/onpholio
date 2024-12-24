@@ -8,24 +8,16 @@ import {
 import fastifyCors from '@fastify/cors'
 import { fastifySwagger } from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
+import fastifyScalar from '@scalar/fastify-api-reference'
 import fjwt, { type FastifyJWT } from '@fastify/jwt'
 import fCookie from '@fastify/cookie'
-import { env } from '@/env'
+import { env } from '@/lib/env'
 import { getUsersRoute } from '@/routes/Users/get-users'
 import {
   getAllProjectsRoute
 } from '@/routes/Projects/get-project'
 import { getAllTechsRoute } from '@/routes/Techs/get-tech'
-
-const listeners = ['SIGINT', 'SIGTERM']
-// biome-ignore lint/complexity/noForEach: <explanation>
-listeners.forEach(signal => {
-  process.on(signal, async () => {
-    await app.close()
-    process.exit(0)
-  })
-})
-
+import type { version } from 'typescript'
 
 const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>()
 
@@ -44,16 +36,25 @@ app.register(fastifyCors, {
 app.register(fastifySwagger, {
   openapi: {
     info: {
-      title: 'Autodocs API',
+      title: 'Onpholio API Reference',
       version: '1.0.0',
+      description: 'API Reference for Onpholio',
     },
   },
   transform: jsonSchemaTransform,
 })
 
-app.get('/docs', async (request, reply) => {
-  return app.swagger()
-})
+app.register(fastifyScalar, {
+    routePrefix: '/docs',
+    configuration: {
+      theme: 'moon',
+      metaData: {
+        title: 'Onpholio API Reference',
+        description: 'API Reference for Onpholio',
+        version: '1.0.0',
+      }
+    }
+});
 
 // JWT
 app.register(fjwt, {
@@ -102,7 +103,7 @@ app.register(getAllProjectsRoute)
 // Server
 app
   .listen({
-    port: env.PORT || 8080,
+    port: env.PORT || 3333,
     host: '0.0.0.0',
   })
   .then(() => {
