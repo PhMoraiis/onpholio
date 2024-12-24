@@ -1,34 +1,21 @@
-import fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
+import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import {
+  jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
 import fastifyCors from '@fastify/cors'
+import { fastifySwagger } from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
 import fjwt, { type FastifyJWT } from '@fastify/jwt'
 import fCookie from '@fastify/cookie'
 import { env } from '@/env'
 import { getUsersRoute } from '@/routes/Users/get-users'
-import { registerUserRoute } from '@/routes/Users/user-register'
-import { userLoginRoute } from '@/routes/Users/user-login'
-import { userLogoutRoute } from '@/routes/Users/user-logout'
 import {
-  getAllProjectsRoute,
-  getProjectByIDRoute,
+  getAllProjectsRoute
 } from '@/routes/Projects/get-project'
-import { getAllTechsRoute, getTechByIDRoute } from '@/routes/Techs/get-tech'
-import {
-  deleteAllProjectsRoute,
-  deleteProjectByIdRoute,
-} from '@/routes/Projects/delete-project'
-import {
-  deleteAllTechsRoute,
-  deleteTechByIdRoute,
-} from '@/routes/Techs/delete-tech'
-import { createTechRoute } from '@/routes/Techs/create-tech'
-import { updateTechRoute } from '@/routes/Techs/update-tech'
-import { createProjectRoute } from '@/routes/Projects/create-project'
-import { updateProjectRoute } from '@/routes/Projects/update-project'
+import { getAllTechsRoute } from '@/routes/Techs/get-tech'
 
 const listeners = ['SIGINT', 'SIGTERM']
 // biome-ignore lint/complexity/noForEach: <explanation>
@@ -39,7 +26,8 @@ listeners.forEach(signal => {
   })
 })
 
-const app = fastify().withTypeProvider<ZodTypeProvider>()
+
+const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>()
 
 // Cors
 app.register(fastifyCors, {
@@ -50,6 +38,21 @@ app.register(fastifyCors, {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+})
+
+// Swagger OPEN API
+app.register(fastifySwagger, {
+  openapi: {
+    info: {
+      title: 'Autodocs API',
+      version: '1.0.0',
+    },
+  },
+  transform: jsonSchemaTransform,
+})
+
+app.get('/docs', async (request, reply) => {
+  return app.swagger()
 })
 
 // JWT
@@ -89,30 +92,17 @@ app.get('/', () => 'Hello World!')
 
 // Route Users
 app.register(getUsersRoute)
-app.register(registerUserRoute)
-app.register(userLoginRoute)
-app.register(userLogoutRoute)
 
 // Route Techs
 app.register(getAllTechsRoute)
-app.register(getTechByIDRoute)
-app.register(deleteAllTechsRoute)
-app.register(deleteTechByIdRoute)
-app.register(createTechRoute)
-app.register(updateTechRoute)
 
 // Route Projects
 app.register(getAllProjectsRoute)
-app.register(getProjectByIDRoute)
-app.register(deleteAllProjectsRoute)
-app.register(deleteProjectByIdRoute)
-app.register(createProjectRoute)
-app.register(updateProjectRoute)
 
 // Server
 app
   .listen({
-    port: env.PORT || 3333,
+    port: env.PORT || 8080,
     host: '0.0.0.0',
   })
   .then(() => {

@@ -12,7 +12,10 @@
     "seed": "bun run src/database/seed.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.3"
+    "@biomejs/biome": "^1.9.3",
+    "@fastify/swagger": "^9.4.0",
+    "@fastify/swagger-ui": "^5.2.0",
+    "@scalar/fastify-api-reference": "^1.25.98"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
