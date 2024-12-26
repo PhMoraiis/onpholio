@@ -4,8 +4,8 @@ import type { FastifyReply, FastifyRequest } from 'fastify'
 export async function getUsers(req: FastifyRequest, reply: FastifyReply) {
   const users = await Prisma.user.findMany({
     select: {
-      name: true,
       id: true,
+      name: true,
       email: true,
     },
   })

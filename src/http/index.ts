@@ -18,6 +18,9 @@ import {
 } from '@/routes/Projects/get-project'
 import { getAllTechsRoute } from '@/routes/Techs/get-tech'
 import type { version } from 'typescript'
+import { userLoginRoute } from '@/routes/Users/user-login'
+import { userLogoutRoute } from '@/routes/Users/user-logout'
+import { registerUserRoute } from '@/routes/Users/user-register'
 
 const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>()
 
@@ -93,6 +96,9 @@ app.get('/', () => 'Hello World!')
 
 // Route Users
 app.register(getUsersRoute)
+app.register(userLoginRoute)
+app.register(userLogoutRoute)
+app.register(registerUserRoute)
 
 // Route Techs
 app.register(getAllTechsRoute)
