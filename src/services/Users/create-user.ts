@@ -25,7 +25,7 @@ export async function createUser(
   }
 
   try {
-    const hash = await bcryptjs.hash(password, 10)
+    const hash = await bcryptjs.hash(password, 12)
     const result = await Prisma.user.create({
       data: {
         name,
