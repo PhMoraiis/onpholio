@@ -8,7 +8,9 @@
     "start": "tsx src/http/index.ts",
     "build": "prisma generate && tsup src",
     "prepare": "husky",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "migratedev": "dotenv -e .env.development -- pnpm prisma migrate dev",
+    "migrateprod": "dotenv -e .env.production -- pnpm prisma migrate deploy"
   },
   "prisma": {
     "seed": "tsx src/database/seed.ts"

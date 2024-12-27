@@ -7,22 +7,15 @@ import {
 } from 'fastify-type-provider-zod'
 import fastifyCors from '@fastify/cors'
 import { fastifySwagger } from '@fastify/swagger'
-import fastifySwaggerUi from '@fastify/swagger-ui'
 import fastifyScalar from '@scalar/fastify-api-reference'
 import fjwt, { type FastifyJWT } from '@fastify/jwt'
 import fCookie from '@fastify/cookie'
 import { env } from '@/lib/env'
-import { getUsersRoute } from '@/routes/Users/get-users'
-import {
-  getAllProjectsRoute
-} from '@/routes/Projects/get-project'
-import { getAllTechsRoute } from '@/routes/Techs/get-tech'
-import type { version } from 'typescript'
-import { userLoginRoute } from '@/routes/Users/user-login'
-import { userLogoutRoute } from '@/routes/Users/user-logout'
-import { registerUserRoute } from '@/routes/Users/user-register'
+import { usersRoute } from '@/routes/Users'
+import { techRoute } from '@/routes/Techs'
+import { projectRoute } from '@/routes/Projects'
 
-const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>()
+const app = Fastify().withTypeProvider<ZodTypeProvider>()
 
 // Cors
 app.register(fastifyCors, {
@@ -40,13 +33,14 @@ app.register(fastifySwagger, {
   openapi: {
     info: {
       title: 'Onpholio API Reference',
-      version: '1.0.0',
+      version: '2.0.0',
       description: 'API Reference for Onpholio',
     },
   },
   transform: jsonSchemaTransform,
 })
 
+// Swagger ScalarUI
 app.register(fastifyScalar, {
     routePrefix: '/docs',
     configuration: {
@@ -54,7 +48,7 @@ app.register(fastifyScalar, {
       metaData: {
         title: 'Onpholio API Reference',
         description: 'API Reference for Onpholio',
-        version: '1.0.0',
+        version: '2.0.0',
       }
     }
 });
@@ -95,16 +89,13 @@ app.setSerializerCompiler(serializerCompiler)
 app.get('/', () => 'Hello World!')
 
 // Route Users
-app.register(getUsersRoute)
-app.register(userLoginRoute)
-app.register(userLogoutRoute)
-app.register(registerUserRoute)
+app.register(usersRoute)
 
 // Route Techs
-app.register(getAllTechsRoute)
+app.register(techRoute)
 
 // Route Projects
-app.register(getAllProjectsRoute)
+app.register(projectRoute)
 
 // Server
 app

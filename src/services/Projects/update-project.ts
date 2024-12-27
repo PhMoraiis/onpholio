@@ -5,12 +5,11 @@ interface UpdateProjectRequest {
   id: string
   title?: string
   description?: string
-  lightImageDesktop?: string
-  darkImageDesktop?: string
-  lightImageMobile?: string
-  darkImageMobile?: string
   href?: string
   status?: Stats
+  images?: {
+    id: string
+  }[]
   techs?: {
     id: string
   }[]
@@ -20,12 +19,9 @@ export async function updateProject({
   id,
   title,
   description,
-  lightImageDesktop,
-  darkImageDesktop,
-  lightImageMobile,
-  darkImageMobile,
   href,
   status,
+  images,
   techs,
 }: UpdateProjectRequest) {
   const updateProject = await Prisma.project.update({
@@ -36,12 +32,13 @@ export async function updateProject({
     data: {
       ...(title && { title }),
       ...(description && { description }),
-      ...(lightImageDesktop && { lightImageDesktop }),
-      ...(darkImageDesktop && { darkImageDesktop }),
-      ...(lightImageMobile && { lightImageMobile }),
-      ...(darkImageMobile && { darkImageMobile }),
       ...(href && { href }),
       ...(status && { status }),
+      ...(images && {
+        images: {
+          connect: images,
+        },
+      }),
       ...(techs && {
         techs: {
           connect: techs,

@@ -4,12 +4,11 @@ import type { Stats } from '@prisma/client'
 interface CreateProjectRequest {
   title: string
   description: string
-  lightImageDesktop: string
-  darkImageDesktop?: string
-  lightImageMobile: string
-  darkImageMobile?: string
   href: string
   status: Stats
+  images: {
+    id: string
+  }[]
   techs: {
     id: string
   }[]
@@ -18,28 +17,32 @@ interface CreateProjectRequest {
 export async function createProject({
   title,
   description,
-  lightImageDesktop,
-  darkImageDesktop,
-  lightImageMobile,
-  darkImageMobile,
   href,
   status,
   techs,
+  images,
 }: CreateProjectRequest) {
   try {
+    const maxOrderProject = await Prisma.project.findFirst({
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    })
+
+    const newOrder = maxOrderProject ? maxOrderProject.order + 1 : 1 // Se não houver projetos, começa com 1
+
     const project = await Prisma.project.create({
       data: {
         title,
         description,
-        lightImageDesktop,
-        darkImageDesktop,
-        lightImageMobile,
-        darkImageMobile,
         href,
         status,
+        order: newOrder,
+        images: {
+          connect: images,
+        },
         techs: {
-          connect: techs
-        }
+          connect: techs,
+        },
       },
     })
 
@@ -48,6 +51,6 @@ export async function createProject({
     }
   } catch (error) {
     console.error('Erro ao criar o projeto:', error)
-    throw error;
+    throw error
   }
 }
