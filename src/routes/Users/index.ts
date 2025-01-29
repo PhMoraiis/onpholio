@@ -2,9 +2,12 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { getUsers } from '@/services/Users/get-user'
 import { z } from 'zod'
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { loginUser } from '@/services/Users/login-user'
+import { loginUser, type ILoginUserRequest } from '@/services/Users/login-user'
 import { logout } from '@/services/Users/logout-user'
-import { createUser } from '@/services/Users/create-user'
+import {
+  createUser,
+  type ICreateUserRequest,
+} from '@/services/Users/create-user'
 
 export const usersRoute: FastifyPluginAsyncZod = async app => {
   app.get(
@@ -32,28 +35,32 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
               /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
             ),
         }),
+        response: {
+          200: z.object({
+            success: z.literal(true),
+            message: z.string(),
+            accessToken: z.string(),
+            name: z.string(),
+          }),
+          401: z.object({
+            success: z.literal(false),
+            message: z.string(),
+          }),
+          404: z.object({
+            success: z.literal(false),
+            message: z.string(),
+          }),
+          500: z.object({
+            success: z.literal(false),
+            message: z.string(),
+          }),
+        },
         tags: ['Users'],
         summary: 'Login a user',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { email, password } = request.body as Record<string, string>
-
-      const result = await loginUser({ email, password }, reply, request)
-
-      if (result.success === false) {
-        const statusCode = result.code === 403 ? 403 : 401
-        reply
-          .status(statusCode)
-          .send({ success: false, message: result.message })
-      } else {
-        reply.send({
-          success: true,
-          message: `Welcome back ${result.name}! Redirecting...`,
-          name: result.name,
-          accessToken: result.accessToken,
-        })
-      }
+      await loginUser(request.body as ILoginUserRequest, reply, request)
     }
   )
 
@@ -62,7 +69,7 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
     {
       schema: {
         body: z.object({
-          name: z.string().min(1, 'Name is required'), // Tornando o nome obrigatório
+          name: z.string().min(1, 'Name is required'),
           email: z.string().email('Must be a valid email'),
           password: z
             .string()
@@ -72,16 +79,31 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
               'Password must contain at least one uppercase, one lowercase, one number, and one special character'
             ),
         }),
+        response: {
+          201: z.object({
+            success: z.literal(true),
+            message: z.string(),
+            user: z.object({
+              id: z.string(),
+              name: z.string(),
+              email: z.string().email(),
+            }),
+          }),
+          409: z.object({
+            success: z.literal(false),
+            message: z.string(),
+          }),
+          500: z.object({
+            success: z.literal(false),
+            message: z.string(),
+          }),
+        },
         tags: ['Users'],
-        summary: 'Create a user',
+        summary: 'Create a new user',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { name, email, password } = request.body as Record<string, string>
-
-      const result = await createUser({ name, email, password }, reply)
-
-      return reply.code(201).send(result)
+      await createUser(request.body as ICreateUserRequest, reply)
     }
   )
 
@@ -91,29 +113,18 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Users'],
         summary: 'Logout a user',
+        response: {
+          200: z.object({
+            success: z.literal(true),
+            message: z.string(),
+          }),
+          401: z.object({
+            success: z.literal(false),
+            message: z.string(),
+          }),
+        },
       },
     },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const result = await logout(request)
-
-      reply.clearCookie('access_token', {
-        path: '/',
-        httpOnly: true,
-        secure: true, // Certifique-se de definir 'secure: true' para produção
-        sameSite: 'none', // Para permitir que o cookie seja enviado em requisições cross-site
-      })
-
-      if (!result.success) {
-        const statusCode = result.code === 403 ? 403 : 401
-        return reply
-          .status(statusCode)
-          .send({ success: false, message: result.message })
-      }
-
-      return reply.send({
-        success: true,
-        message: 'See you soon! Redirecting...',
-      })
-    }
+    logout
   )
 }
