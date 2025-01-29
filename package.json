@@ -29,7 +29,7 @@
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
-    "prisma": "^6.1.0"
+    "prisma": "^6.3.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -38,7 +38,7 @@
     "@fastify/cookie": "^10.0.1",
     "@fastify/cors": "^10.0.1",
     "@fastify/jwt": "^9.0.1",
-    "@prisma/client": "^6.1.0",
+    "@prisma/client": "^6.3.0",
     "@scalar/themes": "^0.9.58",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^2.4.3",
