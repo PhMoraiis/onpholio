@@ -17,12 +17,11 @@ import { projectRoute } from '@/routes/Projects'
 
 const app = Fastify().withTypeProvider<ZodTypeProvider>()
 
+const ambientOrigin = env.NODE_ENV === 'production' ? 'https://philipemorais.com' : 'http://localhost:3000'
+
 // Cors
 app.register(fastifyCors, {
-  origin:
-    env.NODE_ENV === 'production'
-      ? 'https://philipemorais.com'
-      : 'http://localhost:3000',
+  origin: [ambientOrigin],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
