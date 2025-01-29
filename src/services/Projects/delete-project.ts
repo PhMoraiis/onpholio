@@ -1,42 +1,43 @@
 import { Prisma } from '@/database/index'
 
-interface DeleteProjectRequest {
-  id: string
-}
+export async function deleteProjectAndReorder({ id }: { id: string }) {
+  try {
+    return await Prisma.$transaction(async transaction => {
+      // Obter o projeto que será deletado
+      const projectToDelete = await transaction.project.findUnique({
+        where: { id },
+        select: { order: true },
+      })
 
-export async function deleteAllProjects() {
-  await Prisma.project.deleteMany()
+      if (!projectToDelete) {
+        throw new Error('Projeto não encontrado')
+      }
 
-  return {
-    success: true,
-    message: 'All projects deleted',
-  }
-}
+      const { order } = projectToDelete
 
-export async function deleteProjectById({ id }: DeleteProjectRequest) {
-  await Prisma.project.delete({
-    where: {
-      id: id,
-    },
-  })
+      // Deletar o projeto
+      const deletedProject = await transaction.project.delete({
+        where: { id },
+      })
 
-  await reorderProjects()
+      // Atualizar as ordens dos projetos restantes
+      await transaction.project.updateMany({
+        where: {
+          order: { gt: order },
+        },
+        data: {
+          order: { decrement: 1 },
+        },
+      })
 
-  return {
-    success: true,
-    message: 'Project deleted',
-  }
-}
-
-async function reorderProjects() {
-  const projects = await Prisma.project.findMany({
-    orderBy: { order: 'asc' },
-  })
-
-  for (let i = 0; i < projects.length; i++) {
-    await Prisma.project.update({
-      where: { id: projects[i].id },
-      data: { order: i + 1 },
+      return {
+        success: true,
+        message: 'Projeto deletado e ordens ajustadas',
+        deletedProject,
+      }
     })
+  } catch (error) {
+    console.error('Erro ao deletar e reordenar projetos:', error)
+    throw error
   }
 }

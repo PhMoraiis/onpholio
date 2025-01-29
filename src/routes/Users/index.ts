@@ -13,6 +13,7 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
       preHandler: [app.authenticate],
       schema: {
         tags: ['Users'],
+        summary: 'Get all users',
       },
     },
     getUsers
@@ -31,24 +32,26 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
               /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
             ),
         }),
-        response: {
-          200: z.object({
-            success: z.boolean(),
-            message: z.string(),
-            accessToken: z.string(),
-          }),
-        },
         tags: ['Users'],
+        summary: 'Login a user',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { email, password } = request.body as Record<string, string>
+      const { email, password } = request.body as Record<
+        string,
+        string
+      >
 
-      const result = await loginUser({ email, password }, reply, request)
+      const result = await loginUser(
+        { email, password },
+        reply,
+        request
+      )
 
       if (result.success === false) {
+        const statusCode = result.code === 403 ? 403 : 401
         reply
-          .status(result.code)
+          .status(statusCode)
           .send({ success: false, message: result.message })
       } else {
         reply.send({
@@ -65,39 +68,36 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
     {
       schema: {
         body: z.object({
-          name: z.string().optional(),
+          name: z.string().min(1, 'Name is required'), // Tornando o nome obrigatório
           email: z.string().email('Must be a valid email'),
           password: z
             .string()
             .min(8, 'Password must be at least 8 characters')
             .regex(
-              // Minimun one uppercase, one lowercase and one number and one special character
-              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+              'Password must contain at least one uppercase, one lowercase, one number, and one special character'
             ),
         }),
         tags: ['Users'],
+        summary: 'Create a user',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { name, email, password } = request.body as Record<string, string>
 
-      await createUser(
-        {
-          name,
-          email,
-          password,
-        },
-        reply
-      )
+      const result = await createUser({ name, email, password }, reply)
+
+      return reply.code(201).send(result)
     }
   )
 
   app.delete(
     '/logout',
     {
-      preHandler: [app.authenticate],
+      preHandler: [app.authenticate], // Verificar se o usuário está autenticado
       schema: {
         tags: ['Users'],
+        summary: 'Logout a user',
       },
     },
     logout

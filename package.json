@@ -4,13 +4,13 @@
   "type": "module",
   "version": "2.0.0",
   "scripts": {
-    "dev": "tsx watch --env-file .env src/http/index.ts",
+    "dev": "tsx watch --env-file .env.development src/http/index.ts",
     "start": "tsx src/http/index.ts",
     "build": "prisma generate && tsup src",
     "prepare": "husky",
     "commit": "git-cz",
-    "migratedev": "dotenv -e .env.development -- pnpm prisma migrate dev",
-    "migrateprod": "dotenv -e .env.production -- pnpm prisma migrate deploy"
+    "migrate:dev": "dotenv -e .env.development -- pnpm prisma migrate dev",
+    "migrate:prod": "dotenv -e .env.production -- pnpm prisma migrate deploy"
   },
   "prisma": {
     "seed": "tsx src/database/seed.ts"
@@ -23,6 +23,9 @@
     "@fastify/swagger": "^9.4.0",
     "@fastify/swagger-ui": "^5.2.0",
     "@scalar/fastify-api-reference": "^1.25.98",
+    "@types/multer": "^1.4.12",
+    "@types/qrcode": "^1.5.5",
+    "@types/speakeasy": "^2.0.10",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
@@ -39,9 +42,11 @@
     "@scalar/themes": "^0.9.58",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.5.1",
     "fastify": "^5.0.0",
     "fastify-type-provider-zod": "^4.0.1",
     "jsonwebtoken": "^9.0.2",
+    "multer": "1.4.5-lts.1",
     "ts-node": "^10.9.2",
     "tsup": "^8.3.0",
     "tsx": "^4.19.1",

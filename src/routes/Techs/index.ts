@@ -16,15 +16,30 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
           image: z.string().optional(),
         }),
         tags: ['Techs'],
+        summary: 'Create a tech',
       },
       preHandler: [app.authenticate],
     },
-    async request => {
+    async (request, reply) => {
       const { name, image } = request.body
 
-      await createTech({
-        name: name,
-        image: image,
+      // Chama a função createTech
+      const result = await createTech({
+        name,
+        image,
+      })
+
+      if (!result.success) {
+        // Retorna o erro caso a criação da tecnologia falhe
+        return reply.code(400).send({
+          message: result.message,
+        })
+      }
+
+      // Retorna o sucesso se a tecnologia foi criada corretamente
+      return reply.code(201).send({
+        message: result.message,
+        tech: result.tech,
       })
     }
   )
@@ -36,10 +51,24 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       preHandler: [app.authenticate],
       schema: {
         tags: ['Techs'],
+        summary: 'Delete all techs',
       },
     },
-    async () => {
-      await deleteAllTechs()
+    async (request, reply) => {
+      try {
+        const result = await deleteAllTechs()
+
+        if (!result.success) {
+          return reply.code(400).send({ message: result.message })
+        }
+
+        return reply.code(200).send({ message: result.message })
+      } catch (error) {
+        console.error('Erro ao deletar todas as tecnologias:', error)
+        return reply.code(500).send({
+          message: 'Erro interno ao tentar deletar todas as tecnologias',
+        })
+      }
     }
   )
 
@@ -49,14 +78,26 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       preHandler: [app.authenticate],
       schema: {
         tags: ['Techs'],
+        summary: 'Delete a tech',
       },
     },
-    async request => {
+    async (request, reply) => {
       const { id } = request.params as { id: string }
 
-      await deleteTechById({
-        id: id,
-      })
+      try {
+        const result = await deleteTechById({ id })
+
+        if (!result.success) {
+          return reply.code(404).send({ message: result.message })
+        }
+
+        return reply.code(200).send({ message: result.message })
+      } catch (error) {
+        console.error('Erro ao deletar a tecnologia:', error)
+        return reply.code(500).send({
+          message: 'Erro interno ao tentar deletar a tecnologia',
+        })
+      }
     }
   )
 
@@ -66,11 +107,19 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
     {
       schema: {
         tags: ['Techs'],
+        summary: 'Get all techs',
       },
     },
     async (request, reply) => {
-      const techs = await getAllTechs()
-      reply.send(techs)
+      try {
+        const { techs } = await getAllTechs()
+        return reply.code(200).send(techs)
+      } catch (error) {
+        console.error('Erro ao obter as tecnologias:', error)
+        return reply.code(500).send({
+          message: 'Erro interno ao tentar obter as tecnologias',
+        })
+      }
     }
   )
 
@@ -80,14 +129,21 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       preHandler: [app.authenticate],
       schema: {
         tags: ['Techs'],
+        summary: 'Get a tech',
       },
     },
-    async request => {
+    async (request, reply) => {
       const { id } = request.params as { id: string }
 
-      await getTechByID({
-        id: id,
-      })
+      try {
+        const { tech } = await getTechByID({ id })
+        return reply.code(200).send(tech)
+      } catch (error) {
+        console.error('Erro ao obter a tecnologia:', error)
+        return reply.code(404).send({
+          message: 'Tecnologia não encontrada',
+        })
+      }
     }
   )
 
@@ -101,18 +157,27 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
           image: z.string().optional(),
         }),
         tags: ['Techs'],
+        summary: 'Update a tech',
       },
       preHandler: [app.authenticate],
     },
-    async request => {
+    async (request, reply) => {
       const { name, image } = request.body
       const { id } = request.params as { id: string }
 
-      await updateTech({
-        id: id,
-        name,
-        image,
-      })
+      try {
+        const { updatedTech } = await updateTech({
+          id: id,
+          name,
+          image,
+        })
+        return reply.code(200).send(updatedTech)
+      } catch (error) {
+        console.error('Erro ao atualizar a tecnologia:', error)
+        return reply.code(400).send({
+          message: 'Erro ao atualizar a tecnologia',
+        })
+      }
     }
   )
 }

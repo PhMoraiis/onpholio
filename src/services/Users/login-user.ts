@@ -12,14 +12,14 @@ export async function loginUser(
   reply: FastifyReply,
   req: FastifyRequest
 ) {
+  // Procurar o usuário no banco de dados
   const user = await Prisma.user.findUnique({
     where: {
       email,
     },
   })
 
-  const isMatch = user && (await bcryptjs.compare(password, user.password))
-  if (!user || !isMatch) {
+  if (!user) {
     return {
       success: false,
       code: 401,
@@ -27,6 +27,17 @@ export async function loginUser(
     }
   }
 
+  // Verificar a senha
+  const isMatch = await bcryptjs.compare(password, user.password)
+  if (!isMatch) {
+    return {
+      success: false,
+      code: 401,
+      message: 'Invalid email or password',
+    }
+  }
+
+  // Se as credenciais estiverem corretas, gerar o token JWT
   const payload = {
     id: user.id,
     name: user.name,
@@ -35,6 +46,7 @@ export async function loginUser(
 
   const token = req.jwt.sign(payload)
 
+  // Configurar o cookie com o JWT gerado
   reply.setCookie('access_token', token, {
     path: '/',
     httpOnly: true,

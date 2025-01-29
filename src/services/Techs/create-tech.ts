@@ -6,16 +6,33 @@ interface CreateTechRequest {
 }
 
 export async function createTech({ name, image }: CreateTechRequest) {
-  const result = await Prisma.tech.create({
-    data: {
-      name,
-      image,
-    },
-  })
+  try {
+    const existingTech = await Prisma.tech.findFirst({
+      where: {
+        name,
+      },
+    })
 
-  const tech = result
+    if (existingTech) {
+      throw new Error('Tecnologia já existe')
+    }
 
-  return {
-    tech,
+    const result = await Prisma.tech.create({
+      data: {
+        name,
+        image,
+      },
+    })
+
+    return {
+      success: true,
+      message: 'Tecnologia criada com sucesso',
+      tech: result,
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(`Erro ao criar a tecnologia: ${error.message}`)
+    }
+    throw new Error('Erro desconhecido ao criar a tecnologia')
   }
 }

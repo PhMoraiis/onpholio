@@ -14,12 +14,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String?
+  email           String   @unique
+  password        String
+  twoFactorSecret String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@map("users")
 }
@@ -41,7 +42,7 @@ model Project {
 
 model Tech {
   id        String    @id @default(cuid())
-  name      String
+  name      String    @unique
   image     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
