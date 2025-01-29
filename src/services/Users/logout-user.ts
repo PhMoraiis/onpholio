@@ -1,13 +1,19 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
-export async function logout(req: FastifyRequest, reply: FastifyReply) {
-  reply.clearCookie('access_token', {
-    path: '/',
-    httpOnly: true,
-    secure: true, // Certifique-se de definir 'secure: true' para produção
-    sameSite: 'none', // Para permitir que o cookie seja enviado em requisições cross-site
-  })
-  return reply.send({
-    message: 'Logged out successfully',
-  })
+export async function logout(
+  req: FastifyRequest
+): Promise<{ success: boolean; message: string; code: number }> {
+  if (!req.cookies.access_token) {
+    return {
+      success: false,
+      message: 'User is not logged in!',
+      code: 401,
+    }
+  }
+
+  return {
+    success: true,
+    message: 'Logged out successfully!',
+    code: 200,
+  }
 }

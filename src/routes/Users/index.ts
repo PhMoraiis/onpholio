@@ -37,16 +37,9 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { email, password } = request.body as Record<
-        string,
-        string
-      >
+      const { email, password } = request.body as Record<string, string>
 
-      const result = await loginUser(
-        { email, password },
-        reply,
-        request
-      )
+      const result = await loginUser({ email, password }, reply, request)
 
       if (result.success === false) {
         const statusCode = result.code === 403 ? 403 : 401
@@ -56,7 +49,8 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
       } else {
         reply.send({
           success: true,
-          message: 'Login successful',
+          message: `Welcome back ${result.name}! Redirecting...`,
+          name: result.name,
           accessToken: result.accessToken,
         })
       }
@@ -94,12 +88,32 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
   app.delete(
     '/logout',
     {
-      preHandler: [app.authenticate], // Verificar se o usuário está autenticado
       schema: {
         tags: ['Users'],
         summary: 'Logout a user',
       },
     },
-    logout
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const result = await logout(request)
+
+      reply.clearCookie('access_token', {
+        path: '/',
+        httpOnly: true,
+        secure: true, // Certifique-se de definir 'secure: true' para produção
+        sameSite: 'none', // Para permitir que o cookie seja enviado em requisições cross-site
+      })
+
+      if (!result.success) {
+        const statusCode = result.code === 403 ? 403 : 401
+        return reply
+          .status(statusCode)
+          .send({ success: false, message: result.message })
+      }
+
+      return reply.send({
+        success: true,
+        message: 'See you soon! Redirecting...',
+      })
+    }
   )
 }

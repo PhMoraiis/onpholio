@@ -23,7 +23,7 @@ export async function loginUser(
     return {
       success: false,
       code: 401,
-      message: 'Invalid email or password',
+      message: 'User not found! Verify and try again.',
     }
   }
 
@@ -33,7 +33,7 @@ export async function loginUser(
     return {
       success: false,
       code: 401,
-      message: 'Invalid email or password',
+      message: 'E-mail or Password is incorrect! Verify and try again.',
     }
   }
 
@@ -54,5 +54,5 @@ export async function loginUser(
     sameSite: 'none',
   })
 
-  return { accessToken: token }
+  return { accessToken: token, name: user.name }
 }
