@@ -7,41 +7,45 @@ interface GetTechRequest {
 export async function getAllTechs() {
   try {
     const techs = await Prisma.tech.findMany({
-      orderBy: {
-        name: 'asc',
-      },
+      orderBy: { name: 'asc' },
     })
 
     return {
+      success: true,
+      statusCode: 200,
       techs,
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Erro ao obter todas as tecnologias: ${error.message}`)
+  } catch (error) {
+    return {
+      success: false,
+      statusCode: 500,
+      message: 'Internal server error! Failed to get all techs.',
     }
-    throw new Error('Erro desconhecido ao obter todas as tecnologias')
   }
 }
 
 export async function getTechByID({ id }: GetTechRequest) {
   try {
-    const tech = await Prisma.tech.findUnique({
-      where: {
-        id,
-      },
-    })
+    const tech = await Prisma.tech.findUnique({ where: { id } })
 
     if (!tech) {
-      throw new Error('Tecnologia não encontrada')
+      return {
+        success: false,
+        statusCode: 404,
+        message: 'Tech not found! Verify the ID and try again.',
+      }
     }
 
     return {
+      success: true,
+      statusCode: 200,
       tech,
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Erro ao obter a tecnologia: ${error.message}`)
+  } catch (error) {
+    return {
+      success: false,
+      statusCode: 500,
+      message: error instanceof Error ? error.message : 'Erro desconhecido',
     }
-    throw new Error('Erro desconhecido ao obter a tecnologia')
   }
 }

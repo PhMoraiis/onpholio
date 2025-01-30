@@ -8,12 +8,14 @@ interface UpdateTechRequest {
 
 export async function updateTech({ id, name, image }: UpdateTechRequest) {
   try {
-    const techExists = await Prisma.tech.findUnique({
-      where: { id },
-    })
+    const techExists = await Prisma.tech.findUnique({ where: { id } })
 
     if (!techExists) {
-      throw new Error('Tecnologia não encontrada')
+      return {
+        success: false,
+        statusCode: 404,
+        message: 'Tecnologia não encontrada',
+      }
     }
 
     const updatedTech = await Prisma.tech.update({
@@ -25,12 +27,16 @@ export async function updateTech({ id, name, image }: UpdateTechRequest) {
     })
 
     return {
+      success: true,
+      statusCode: 200,
       updatedTech,
     }
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Erro ao atualizar a tecnologia: ${error.message}`)
+    console.error('Erro ao atualizar a tecnologia:', error)
+    return {
+      success: false,
+      statusCode: 400,
+      message: error instanceof Error ? error.message : 'Erro desconhecido',
     }
-    throw new Error('Erro desconhecido ao atualizar a tecnologia')
   }
 }

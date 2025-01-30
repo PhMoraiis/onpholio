@@ -42,7 +42,7 @@ model Project {
 model Tech {
   id        String    @id @default(cuid())
   name      String    @unique
-  image     String?
+  image     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   projects  Project[]

@@ -17,6 +17,22 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Users'],
         summary: 'Get all users',
+        response: {
+          200: z.object({
+            success: z.literal(true),
+            users: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+                email: z.string().email(),
+              })
+            ),
+          }),
+          401: z.object({
+            success: z.literal(false),
+            message: z.string(),
+          }),
+        },
       },
     },
     getUsers

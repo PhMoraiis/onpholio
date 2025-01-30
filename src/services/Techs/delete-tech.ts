@@ -6,46 +6,58 @@ interface DeleteTechRequest {
 
 export async function deleteAllTechs() {
   try {
-    await Prisma.tech.deleteMany()
+    const techs = await Prisma.tech.deleteMany()
+
+    if (!techs) {
+      return {
+        success: false,
+        statusCode: 404,
+        message: 'No techs found! Nothing to delete.',
+      }
+    }
 
     return {
       success: true,
-      message: 'Todas as tecnologias foram deletadas',
+      statusCode: 200,
+      message: 'All techs deleted successfully!',
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Erro ao deletar todas as tecnologias: ${error.message}`)
+  } catch (error) {
+    return {
+      success: false,
+      statusCode: 500,
+      message: 'Internal server error! Failed to delete all techs.',
     }
-    throw new Error('Erro desconhecido ao deletar todas as tecnologias')
   }
 }
 
 export async function deleteTechById({ id }: DeleteTechRequest) {
   try {
     const tech = await Prisma.tech.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     })
 
     if (!tech) {
-      throw new Error('Tecnologia não encontrada')
+      return {
+        success: false,
+        statusCode: 404,
+        message: 'Tech not found! Verify the ID and try again.',
+      }
     }
 
     await Prisma.tech.delete({
-      where: {
-        id,
-      },
+      where: { id },
     })
 
     return {
       success: true,
-      message: 'Tecnologia deletada com sucesso',
+      statusCode: 200,
+      message: 'Tech deleted successfully!',
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Erro ao deletar a tecnologia: ${error.message}`)
+  } catch (error) {
+    return {
+      success: false,
+      statusCode: 500,
+      message: 'Internal server error! Failed to delete the tech.',
     }
-    throw new Error('Erro desconhecido ao deletar a tecnologia')
   }
 }

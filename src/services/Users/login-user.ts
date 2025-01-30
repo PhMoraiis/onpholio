@@ -53,7 +53,7 @@ export async function loginUser(
 
     return reply.send({
       success: true,
-      message: `Welcome back, ${user.name}! Redirecting...`,
+      message: `Welcome back, ${user.name?.split(' ')[0]}! Redirecting...`,
       name: user.name,
       accessToken: token,
     })

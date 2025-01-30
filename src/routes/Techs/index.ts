@@ -4,6 +4,7 @@ import { createTech } from '@/services/Techs/create-tech'
 import { deleteAllTechs, deleteTechById } from '@/services/Techs/delete-tech'
 import { getAllTechs, getTechByID } from '@/services/Techs/get-tech'
 import { updateTech } from '@/services/Techs/update-tech'
+import { create } from 'qrcode'
 
 export const techRoute: FastifyPluginAsyncZod = async app => {
   // Create Endpoint
@@ -12,34 +13,44 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
     {
       schema: {
         body: z.object({
-          name: z.string(),
-          image: z.string().optional(),
+          name: z
+            .string()
+            .min(1, 'Name must have at least 1 character')
+            .max(255, 'Name must have at most 255 characters'),
+          image: z.string().min(1, 'Image or Logo is required'),
         }),
         tags: ['Techs'],
         summary: 'Create a tech',
+        response: {
+          201: z.object({
+            message: z.string(),
+            tech: z.object({
+              id: z.string(),
+              name: z.string(),
+              image: z.string(),
+            }),
+          }),
+          400: z.object({
+            message: z.string(),
+          }),
+          409: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
       },
       preHandler: [app.authenticate],
     },
     async (request, reply) => {
       const { name, image } = request.body
 
-      // Chama a função createTech
-      const result = await createTech({
-        name,
-        image,
-      })
+      const result = await createTech({ name, image })
 
-      if (!result.success) {
-        // Retorna o erro caso a criação da tecnologia falhe
-        return reply.code(400).send({
-          message: result.message,
-        })
-      }
-
-      // Retorna o sucesso se a tecnologia foi criada corretamente
-      return reply.code(201).send({
+      return reply.code(result.statusCode).send({
         message: result.message,
-        tech: result.tech,
+        ...(result.tech && { tech: result.tech }), // Só adiciona `tech` se existir
       })
     }
   )
@@ -52,23 +63,23 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Techs'],
         summary: 'Delete all techs',
+        response: {
+          200: z.object({
+            message: z.string(),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
-    async (request, reply) => {
-      try {
-        const result = await deleteAllTechs()
+    async (_, reply) => {
+      const result = await deleteAllTechs()
 
-        if (!result.success) {
-          return reply.code(400).send({ message: result.message })
-        }
-
-        return reply.code(200).send({ message: result.message })
-      } catch (error) {
-        console.error('Erro ao deletar todas as tecnologias:', error)
-        return reply.code(500).send({
-          message: 'Erro interno ao tentar deletar todas as tecnologias',
-        })
-      }
+      return reply.code(result.statusCode).send({ message: result.message })
     }
   )
 
@@ -79,25 +90,24 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Techs'],
         summary: 'Delete a tech',
+        response: {
+          200: z.object({
+            message: z.string(),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
+      const result = await deleteTechById({ id })
 
-      try {
-        const result = await deleteTechById({ id })
-
-        if (!result.success) {
-          return reply.code(404).send({ message: result.message })
-        }
-
-        return reply.code(200).send({ message: result.message })
-      } catch (error) {
-        console.error('Erro ao deletar a tecnologia:', error)
-        return reply.code(500).send({
-          message: 'Erro interno ao tentar deletar a tecnologia',
-        })
-      }
+      return reply.code(result.statusCode).send({ message: result.message })
     }
   )
 
@@ -108,18 +118,32 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Techs'],
         summary: 'Get all techs',
+        response: {
+          200: {
+            techs: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+                image: z.string(),
+                createdAt: z.date(),
+                updatedAt: z.date(),
+              })
+            ),
+          },
+          500: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     async (request, reply) => {
-      try {
-        const { techs } = await getAllTechs()
-        return reply.code(200).send(techs)
-      } catch (error) {
-        console.error('Erro ao obter as tecnologias:', error)
-        return reply.code(500).send({
-          message: 'Erro interno ao tentar obter as tecnologias',
-        })
+      const result = await getAllTechs()
+
+      if (!result.success) {
+        return reply.code(result.statusCode).send({ message: result.message })
       }
+
+      return reply.code(result.statusCode).send({ techs: result.techs })
     }
   )
 
@@ -130,20 +154,29 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Techs'],
         summary: 'Get a tech',
+        response: {
+          200: {
+            tech: z.object({
+              id: z.string(),
+              name: z.string(),
+              image: z.string(),
+              createdAt: z.date(),
+              updatedAt: z.date(),
+            }),
+          },
+          404: z.object({ message: z.string() }),
+          500: z.object({ message: z.string() }),
+        },
+        params: z.object({
+          id: z.string(),
+        }),
       },
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
+      const result = await getTechByID({ id })
 
-      try {
-        const { tech } = await getTechByID({ id })
-        return reply.code(200).send(tech)
-      } catch (error) {
-        console.error('Erro ao obter a tecnologia:', error)
-        return reply.code(404).send({
-          message: 'Tecnologia não encontrada',
-        })
-      }
+      return reply.code(result.statusCode).send({ tech: result.tech })
     }
   )
 
@@ -156,6 +189,27 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
           name: z.string().optional(),
           image: z.string().optional(),
         }),
+        response: {
+          200: z.object({
+            updatedTech: z.object({
+              id: z.string(),
+              name: z.string(),
+              image: z.string(),
+            }),
+          }),
+          400: z.object({
+            message: z.string(),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
+        params: z.object({
+          id: z.string(),
+        }),
         tags: ['Techs'],
         summary: 'Update a tech',
       },
@@ -165,19 +219,19 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       const { name, image } = request.body
       const { id } = request.params as { id: string }
 
-      try {
-        const { updatedTech } = await updateTech({
-          id: id,
-          name,
-          image,
-        })
-        return reply.code(200).send(updatedTech)
-      } catch (error) {
-        console.error('Erro ao atualizar a tecnologia:', error)
-        return reply.code(400).send({
-          message: 'Erro ao atualizar a tecnologia',
-        })
-      }
+      const result = await updateTech({ id, name, image })
+
+      return reply.code(result.statusCode).send(
+        result.success
+          ? {
+              updatedTech: result.updatedTech as {
+                name: string
+                image: string
+                id: string
+              },
+            }
+          : { message: result.message || 'Erro desconhecido' }
+      )
     }
   )
 }
