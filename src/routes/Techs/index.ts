@@ -5,6 +5,7 @@ import { deleteAllTechs, deleteTechById } from '@/services/Techs/delete-tech'
 import { getAllTechs, getTechByID } from '@/services/Techs/get-tech'
 import { updateTech } from '@/services/Techs/update-tech'
 import { create } from 'qrcode'
+import type { Tech } from '@/services/Techs/types'
 
 export const techRoute: FastifyPluginAsyncZod = async app => {
   // Create Endpoint
@@ -119,20 +120,18 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
         tags: ['Techs'],
         summary: 'Get all techs',
         response: {
-          200: {
+          200: z.object({
             techs: z.array(
               z.object({
                 id: z.string(),
                 name: z.string(),
                 image: z.string(),
-                createdAt: z.date(),
-                updatedAt: z.date(),
+                createdAt: z.coerce.date(),
+                updatedAt: z.coerce.date(),
               })
             ),
-          },
-          500: z.object({
-            message: z.string(),
           }),
+          400: z.object({ message: z.string().optional() }),
         },
       },
     },
@@ -143,7 +142,13 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
         return reply.code(result.statusCode).send({ message: result.message })
       }
 
-      return reply.code(result.statusCode).send({ techs: result.techs })
+      return reply.code(result.statusCode).send({
+        techs: result.techs.map((tech: Tech) => ({
+          ...tech,
+          createdAt: tech.createdAt.toISOString(),
+          updatedAt: tech.updatedAt.toISOString(),
+        })),
+      })
     }
   )
 
