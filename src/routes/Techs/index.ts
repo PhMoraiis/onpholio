@@ -120,6 +120,9 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Techs'],
         summary: 'Get all techs',
+        querystring: z.object({
+          orderBy: z.enum(['name', 'createdAt', 'updatedAt']).optional(), // `orderBy` opcional
+        }),
         response: {
           200: z.object({
             techs: z.array(
@@ -133,23 +136,25 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
             ),
           }),
           400: z.object({ message: z.string().optional() }),
+          500: z.object({ message: z.string().optional() }),
         },
       },
     },
     async (request, reply) => {
-      const result = await getAllTechs()
+      const { orderBy } = request.query // Pode ser `undefined` se não for enviado
+
+      const result = await getAllTechs(orderBy)
 
       if (!result.success) {
         return reply.code(result.statusCode).send({ message: result.message })
       }
+
       return reply.code(result.statusCode).send({
-        techs: result.techs
-          ? result.techs.map((tech: Tech) => ({
-              ...tech,
-              createdAt: new Date(tech.createdAt),
-              updatedAt: new Date(tech.updatedAt),
-            }))
-          : [],
+        techs: (result.techs ?? []).map(tech => ({
+          ...tech,
+          createdAt: new Date(tech.createdAt),
+          updatedAt: new Date(tech.updatedAt),
+        })),
       })
     }
   )

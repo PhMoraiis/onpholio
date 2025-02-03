@@ -4,13 +4,11 @@
   "type": "module",
   "version": "2.0.0",
   "scripts": {
-    "dev": "tsx watch --env-file .env.development src/http/index.ts",
+    "dev": "tsx watch --env-file .env src/http/index.ts",
     "start": "tsx src/http/index.ts",
     "build": "prisma generate && tsup src",
     "prepare": "husky",
-    "commit": "git-cz",
-    "migrate:dev": "dotenv -e .env.development -- pnpm prisma migrate dev",
-    "migrate:prod": "dotenv -e .env.production -- pnpm prisma migrate deploy"
+    "commit": "git-cz"
   },
   "prisma": {
     "seed": "tsx src/database/seed.ts"

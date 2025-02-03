@@ -4,10 +4,16 @@ interface GetTechRequest {
   id: string
 }
 
-export async function getAllTechs() {
+export async function getAllTechs(orderBy?: string) {
   try {
+    let orderByCriteria = undefined // Não aplicar ordenação por padrão
+
+    if (orderBy) {
+      orderByCriteria = { [orderBy]: 'asc' }
+    }
+
     const techs = await Prisma.tech.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: orderByCriteria, // Prisma ignora se for `undefined`
     })
 
     return {
