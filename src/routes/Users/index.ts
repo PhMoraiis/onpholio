@@ -126,6 +126,7 @@ export const usersRoute: FastifyPluginAsyncZod = async app => {
   app.delete(
     '/logout',
     {
+      preHandler: [app.authenticate],
       schema: {
         tags: ['Users'],
         summary: 'Logout a user',

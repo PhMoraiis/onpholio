@@ -19,7 +19,7 @@ const app = Fastify().withTypeProvider<ZodTypeProvider>()
 
 // Cors
 app.register(fastifyCors, {
-  origin: [env.ROOT_URL],
+  origin: env.ROOT_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -39,25 +39,28 @@ app.register(fastifySwagger, {
 
 // Swagger ScalarUI
 app.register(fastifyScalar, {
-    routePrefix: '/docs',
-    configuration: {
-      theme: 'moon',
-      metaData: {
-        title: 'Onpholio API Reference',
-        description: 'API Reference for Onpholio',
-        version: '2.0.0',
-      }
-    }
-});
+  routePrefix: '/docs',
+  configuration: {
+    theme: 'moon',
+    metaData: {
+      title: 'Onpholio API Reference',
+      description: 'API Reference for Onpholio',
+      version: '2.0.0',
+    },
+  },
+})
 
 // JWT
 app.register(fjwt, {
   secret: env.JWT_SECRET,
 })
-app.addHook('preHandler', (req, res, next) => {
+
+app.addHook('preHandler', (req, reply, next) => {
+  reply.header('Access-Control-Allow-Credentials', true)
   req.jwt = app.jwt
   return next()
 })
+
 app.decorate(
   'authenticate',
   async (req: FastifyRequest, reply: FastifyReply) => {

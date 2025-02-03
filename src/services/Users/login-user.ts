@@ -45,9 +45,9 @@ export async function loginUser(
 
     // Configurar o cookie com o JWT gerado
     reply.setCookie('access_token', token, {
-      path: '/',
       httpOnly: true,
       secure: true,
+      path: '/',
       sameSite: 'none',
     })
 

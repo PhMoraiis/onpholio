@@ -4,7 +4,6 @@ import { createTech } from '@/services/Techs/create-tech'
 import { deleteAllTechs, deleteTechById } from '@/services/Techs/delete-tech'
 import { getAllTechs, getTechByID } from '@/services/Techs/get-tech'
 import { updateTech } from '@/services/Techs/update-tech'
-import { create } from 'qrcode'
 import type { Tech } from '@/services/Techs/types'
 
 export const techRoute: FastifyPluginAsyncZod = async app => {
@@ -12,13 +11,14 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
   app.post(
     '/techs',
     {
+      preHandler: [app.authenticate],
       schema: {
         body: z.object({
           name: z
             .string()
             .min(1, 'Name must have at least 1 character')
             .max(255, 'Name must have at most 255 characters'),
-          image: z.string().min(1, 'Image or Logo is required'),
+          image: z.string().min(1, 'Image or Logo is required').url(),
         }),
         tags: ['Techs'],
         summary: 'Create a tech',
@@ -29,12 +29,11 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
               id: z.string(),
               name: z.string(),
               image: z.string(),
+              createdAt: z.coerce.date(),
+              updatedAt: z.coerce.date(),
             }),
           }),
           400: z.object({
-            message: z.string(),
-          }),
-          409: z.object({
             message: z.string(),
           }),
           500: z.object({
@@ -42,7 +41,6 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
           }),
         },
       },
-      preHandler: [app.authenticate],
     },
     async (request, reply) => {
       const { name, image } = request.body
@@ -102,6 +100,9 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
             message: z.string(),
           }),
         },
+        params: z.object({
+          id: z.string(),
+        }),
       },
     },
     async (request, reply) => {
@@ -141,13 +142,14 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       if (!result.success) {
         return reply.code(result.statusCode).send({ message: result.message })
       }
-
       return reply.code(result.statusCode).send({
-        techs: result.techs.map((tech: Tech) => ({
-          ...tech,
-          createdAt: tech.createdAt.toISOString(),
-          updatedAt: tech.updatedAt.toISOString(),
-        })),
+        techs: result.techs
+          ? result.techs.map((tech: Tech) => ({
+              ...tech,
+              createdAt: new Date(tech.createdAt),
+              updatedAt: new Date(tech.updatedAt),
+            }))
+          : [],
       })
     }
   )
@@ -160,17 +162,21 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
         tags: ['Techs'],
         summary: 'Get a tech',
         response: {
-          200: {
+          200: z.object({
             tech: z.object({
               id: z.string(),
               name: z.string(),
               image: z.string(),
-              createdAt: z.date(),
-              updatedAt: z.date(),
+              createdAt: z.coerce.date(),
+              updatedAt: z.coerce.date(),
             }),
-          },
-          404: z.object({ message: z.string() }),
-          500: z.object({ message: z.string() }),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
         },
         params: z.object({
           id: z.string(),
@@ -181,6 +187,9 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       const { id } = request.params as { id: string }
       const result = await getTechByID({ id })
 
+      if (!result.tech) {
+        return reply.code(404).send({ message: 'Tech not found' })
+      }
       return reply.code(result.statusCode).send({ tech: result.tech })
     }
   )
