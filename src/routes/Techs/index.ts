@@ -195,13 +195,13 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
   )
 
   // Update Endpoint
-  app.patch(
+  app.put(
     '/techs/:id',
     {
       schema: {
         body: z.object({
-          name: z.string().optional(),
-          image: z.string().optional(),
+          name: z.string(),
+          image: z.string(),
         }),
         response: {
           200: z.object({
