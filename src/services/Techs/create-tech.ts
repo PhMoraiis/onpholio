@@ -2,10 +2,9 @@ import { Prisma } from '@/database/index'
 
 interface CreateTechRequest {
   name: string
-  image: string
 }
 
-export async function createTech({ name, image }: CreateTechRequest) {
+export async function createTech({ name }: CreateTechRequest) {
   const existingTech = await Prisma.tech.findFirst({
     where: { name },
   })
@@ -20,7 +19,7 @@ export async function createTech({ name, image }: CreateTechRequest) {
 
   try {
     const tech = await Prisma.tech.create({
-      data: { name, image },
+      data: { name },
     })
 
     return {
@@ -30,10 +29,7 @@ export async function createTech({ name, image }: CreateTechRequest) {
       tech,
     }
   } catch (error) {
-    return {
-      success: false,
-      statusCode: 500,
-      message: 'Internal server error! Failed to create tech.',
-    }
+    console.log('Error creating tech:', error)
+    throw new Error('Error creating tech')
   }
 }

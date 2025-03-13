@@ -1,17 +1,10 @@
 import z from 'zod'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { createProject } from '@/services/Projects/create-project'
-import { ImageSize, ImageTheme, Stats } from '@prisma/client'
 import { deleteProjectAndReorder } from '@/services/Projects/delete-project'
 import { getAllProjects, getProjectByID } from '@/services/Projects/get-project'
 import { updateProject } from '@/services/Projects/update-project'
 import { updateProjectOrder } from '@/services/Projects/order-project'
-
-type ConvertedImage = {
-  fileBuffer: Buffer
-  theme: 'LIGHT' | 'DARK'
-  size: 'DESKTOP' | 'MOBILE'
-}
 
 export const projectRoute: FastifyPluginAsyncZod = async app => {
   // Create Project Endpoint
@@ -23,20 +16,42 @@ export const projectRoute: FastifyPluginAsyncZod = async app => {
           title: z.string(),
           description: z.string(),
           href: z.string().url(),
-          status: z.nativeEnum(Stats),
-          images: z.array(
-            z.object({
-              fileBuffer: z.string(), // Recebe o fileBuffer como string
-              theme: z.nativeEnum(ImageTheme),
-              size: z.nativeEnum(ImageSize),
-            })
-          ),
+          initial_date: z.coerce.date(),
+          final_date: z.coerce.date(),
+          icon: z.string(),
+          image: z.string(),
           techs: z.array(
             z.object({
               id: z.string(),
             })
           ),
         }),
+        response: {
+          201: z.object({
+            message: z.string(),
+            project: z.object({
+              id: z.string(),
+              title: z.string(),
+              description: z.string(),
+              href: z.string(),
+              initial_date: z.coerce.date(),
+              final_date: z.coerce.date(),
+              icon: z.string(),
+              image: z.string(),
+              techs: z.array(
+                z.object({
+                  id: z.string(),
+                  name: z.string(),
+                })
+              ),
+              createdAt: z.coerce.date(),
+              updatedAt: z.coerce.date(),
+            }),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
         tags: ['Projects'],
         summary: 'Create a project',
       },
@@ -44,22 +59,26 @@ export const projectRoute: FastifyPluginAsyncZod = async app => {
     },
     async (request, reply) => {
       try {
-        const { title, description, images, href, status, techs } = request.body
+        const {
+          title,
+          description,
+          href,
+          initial_date,
+          final_date,
+          icon,
+          image,
+          techs,
+        } = request.body
 
-        // Converte o fileBuffer de string para Buffer antes de passar para o service
-        const convertedImages = images.map(image => ({
-          ...image,
-          fileBuffer: Buffer.from(image.fileBuffer, 'base64'),
-        }))
-
-        // Chama o serviço para criar o projeto
         const { project } = await createProject({
           title,
           description,
           href,
-          status,
+          initial_date,
+          final_date,
+          icon,
+          image,
           techs,
-          images: convertedImages,
         })
 
         return reply.code(201).send({
@@ -83,6 +102,17 @@ export const projectRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Projects'],
         summary: 'Delete a project',
+        response: {
+          200: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
+        params: z.object({
+          id: z.string(),
+        }),
       },
     },
     async (request, reply) => {
@@ -119,6 +149,31 @@ export const projectRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Projects'],
         summary: 'Get all projects',
+        response: {
+          200: z.array(
+            z.object({
+              id: z.string(),
+              title: z.string(),
+              description: z.string(),
+              href: z.string(),
+              initial_date: z.coerce.date(),
+              final_date: z.coerce.date(),
+              icon: z.string(),
+              image: z.string(),
+              techs: z.array(
+                z.object({
+                  id: z.string(),
+                  name: z.string(),
+                })
+              ),
+              createdAt: z.coerce.date(),
+              updatedAt: z.coerce.date(),
+            })
+          ),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     async (request, reply) => {
@@ -142,6 +197,32 @@ export const projectRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         tags: ['Projects'],
         summary: 'Get a project',
+        response: {
+          200: z.object({
+            id: z.string(),
+            title: z.string(),
+            description: z.string(),
+            href: z.string(),
+            initial_date: z.coerce.date(),
+            final_date: z.coerce.date(),
+            icon: z.string(),
+            image: z.string(),
+            techs: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+              })
+            ),
+            createdAt: z.coerce.date(),
+            updatedAt: z.coerce.date(),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     async (request, reply) => {
@@ -165,59 +246,84 @@ export const projectRoute: FastifyPluginAsyncZod = async app => {
   )
 
   // Update Project Endpoint
-  app.patch(
+  app.put(
     '/projects/:id',
     {
       schema: {
         body: z.object({
-          title: z.string().optional(),
-          description: z.string().optional(),
-          images: z
-            .array(
-              z.object({
-                fileBuffer: z.string(), // Recebe o fileBuffer como string
-                theme: z.nativeEnum(ImageTheme),
-                size: z.nativeEnum(ImageSize),
-              })
-            )
-            .optional(),
-          href: z.string().url().optional(),
-          status: z.nativeEnum(Stats).optional(),
-          techs: z
-            .array(
-              z.object({
-                id: z.string(),
-              })
-            )
-            .optional(),
+          title: z.string(),
+          description: z.string(),
+          href: z.string().url(),
+          initial_date: z.coerce.date(),
+          final_date: z.coerce.date(),
+          icon: z.string(),
+          image: z.string(),
+          techs: z.array(
+            z.object({
+              id: z.string(),
+            })
+          ),
         }),
         tags: ['Projects'],
         summary: 'Update a project',
+        response: {
+          200: z.object({
+            message: z.string(),
+            project: z.object({
+              id: z.string(),
+              title: z.string(),
+              description: z.string(),
+              href: z.string(),
+              initial_date: z.coerce.date(),
+              final_date: z.coerce.date(),
+              icon: z.string(),
+              image: z.string(),
+              techs: z.array(
+                z.object({
+                  id: z.string(),
+                  name: z.string(),
+                })
+              ),
+              createdAt: z.coerce.date(),
+              updatedAt: z.coerce.date(),
+            }),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
+        params: z.object({
+          id: z.string(),
+        }),
       },
       preHandler: [app.authenticate],
     },
     async (request, reply) => {
-      const { title, description, images, href, status, techs } = request.body
+      const {
+        title,
+        description,
+        href,
+        initial_date,
+        final_date,
+        icon,
+        image,
+        techs,
+      } = request.body
       const { id } = request.params as { id: string }
 
       try {
-        // Define e converte as imagens, se necessário
-        let convertedImages: ConvertedImage[] | undefined
-        if (images) {
-          convertedImages = images.map(image => ({
-            fileBuffer: Buffer.from(image.fileBuffer, 'base64'),
-            theme: image.theme,
-            size: image.size,
-          }))
-        }
-
-        const updatedProject = await updateProject({
+        const { updatedProject } = await updateProject({
           id,
           title,
           description,
-          images: convertedImages,
           href,
-          status,
+          initial_date,
+          final_date,
+          icon,
+          image,
           techs,
         })
 
@@ -246,10 +352,21 @@ export const projectRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         params: z.object({
           id: z.string().min(1, 'O ID do projeto é obrigatório'),
-          newOrder: z
+          newOrder: z.coerce
             .number()
             .min(1, 'A nova ordem deve ser maior ou igual a 1'),
         }),
+        response: {
+          200: z.object({
+            message: z.string(),
+          }),
+          400: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            message: z.string(),
+          }),
+        },
         tags: ['Projects'],
         summary: 'Update project order',
       },
@@ -261,11 +378,20 @@ export const projectRoute: FastifyPluginAsyncZod = async app => {
 
         const result = await updateProjectOrder(projectId, Number(newOrder))
 
-        return reply.send(result)
+        return reply.code(200).send(result)
       } catch (error) {
-        console.error('Erro na atualização da ordem do projeto:', error)
+        const errorMessage =
+          error instanceof Error ? error.message : 'Erro desconhecido'
+
+        if (
+          errorMessage === 'A nova ordem deve ser maior ou igual a 1' ||
+          errorMessage === 'Projeto não encontrado'
+        ) {
+          return reply.code(400).send({ message: errorMessage })
+        }
+
         return reply
-          .status(500)
+          .code(500)
           .send({ message: 'Erro interno ao atualizar a ordem do projeto' })
       }
     }

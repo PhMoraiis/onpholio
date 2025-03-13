@@ -18,7 +18,6 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
             .string()
             .min(1, 'Name must have at least 1 character')
             .max(255, 'Name must have at most 255 characters'),
-          image: z.string().min(1, 'Image or Logo is required').url(),
         }),
         tags: ['Techs'],
         summary: 'Create a tech',
@@ -28,7 +27,6 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
             tech: z.object({
               id: z.string(),
               name: z.string(),
-              image: z.string(),
               createdAt: z.coerce.date(),
               updatedAt: z.coerce.date(),
             }),
@@ -43,9 +41,9 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { name, image } = request.body
+      const { name } = request.body
 
-      const result = await createTech({ name, image })
+      const result = await createTech({ name })
 
       return reply.code(result.statusCode).send({
         message: result.message,
@@ -77,7 +75,6 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
     },
     async (_, reply) => {
       const result = await deleteAllTechs()
-
       return reply.code(result.statusCode).send({ message: result.message })
     }
   )
@@ -108,7 +105,6 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const result = await deleteTechById({ id })
-
       return reply.code(result.statusCode).send({ message: result.message })
     }
   )
@@ -129,7 +125,6 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
               z.object({
                 id: z.string(),
                 name: z.string(),
-                image: z.string(),
                 createdAt: z.coerce.date(),
                 updatedAt: z.coerce.date(),
               })
@@ -150,7 +145,7 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       }
 
       return reply.code(result.statusCode).send({
-        techs: (result.techs ?? []).map(tech => ({
+        techs: (result.techs ?? []).map((tech: Tech) => ({
           ...tech,
           createdAt: new Date(tech.createdAt),
           updatedAt: new Date(tech.updatedAt),
@@ -171,7 +166,6 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
             tech: z.object({
               id: z.string(),
               name: z.string(),
-              image: z.string(),
               createdAt: z.coerce.date(),
               updatedAt: z.coerce.date(),
             }),
@@ -206,14 +200,12 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         body: z.object({
           name: z.string(),
-          image: z.string(),
         }),
         response: {
           200: z.object({
             updatedTech: z.object({
               id: z.string(),
               name: z.string(),
-              image: z.string(),
             }),
           }),
           400: z.object({
@@ -235,10 +227,10 @@ export const techRoute: FastifyPluginAsyncZod = async app => {
       preHandler: [app.authenticate],
     },
     async (request, reply) => {
-      const { name, image } = request.body
+      const { name } = request.body
       const { id } = request.params as { id: string }
 
-      const result = await updateTech({ id, name, image })
+      const result = await updateTech({ id, name })
 
       return reply.code(result.statusCode).send(
         result.success

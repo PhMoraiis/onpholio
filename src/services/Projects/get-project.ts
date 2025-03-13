@@ -6,12 +6,17 @@ interface GetProjectRequest {
 
 export async function getAllProjects() {
   const projects = await Prisma.project.findMany({
-   include: {
-    techs: true,
-   },
-   orderBy: {
-    createdAt: 'asc',
-   },
+    include: {
+      techs: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
   })
 
   return {
@@ -21,6 +26,14 @@ export async function getAllProjects() {
 
 export async function getProjectByID({ id }: GetProjectRequest) {
   const project = await Prisma.project.findUnique({
+    include: {
+      techs: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
     where: {
       id: id,
     },

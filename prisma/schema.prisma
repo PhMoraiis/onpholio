@@ -14,27 +14,29 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(cuid())
-  name            String?
-  email           String   @unique
-  password        String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  href        String
-  status      Stats
-  order       Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  techs       Tech[]
-  images      Image[]
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  href         String
+  initial_date DateTime
+  final_date   DateTime
+  icon         String
+  image        String
+  order        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  techs        Tech[]
 
   @@map("projects")
 }
@@ -42,43 +44,9 @@ model Project {
 model Tech {
   id        String    @id @default(cuid())
   name      String    @unique
-  image     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   projects  Project[]
 
   @@map("techs")
-}
-
-model Image {
-  id        String     @id @default(cuid())
-  url       String
-  theme     ImageTheme
-  size      ImageSize
-  project   Project    @relation(fields: [projectId], references: [id])
-  projectId String
-
-  @@map("images")
-}
-
-enum ImageTheme {
-  LIGHT
-  DARK
-
-  @@map("image_themes")
-}
-
-enum ImageSize {
-  DESKTOP
-  MOBILE
-
-  @@map("image_sizes")
-}
-
-enum Stats {
-  ONLINE
-  DESENVOLVIMENTO
-  INTERROMPIDO
-
-  @@map("stats")
 }
